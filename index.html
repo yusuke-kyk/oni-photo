@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
 
@@ -11,68 +12,143 @@
   <title>百鬼夜行フォト</title>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
+      padding: 0;
+
       background: #111;
       color: #fff;
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Hiragino Kaku Gothic ProN",
         "Yu Gothic",
         sans-serif;
+
       text-align: center;
     }
 
+
+    body {
+      min-height: 100svh;
+    }
+
+
     .container {
       width: 100%;
-      max-width: 500px;
+
+      max-width: 520px;
+
       margin: 0 auto;
-      padding: 12px;
+
+      padding:
+        max(6px, env(safe-area-inset-top))
+        8px
+        max(8px, env(safe-area-inset-bottom));
     }
+
+
+    /*
+    =========================================
+    タイトル
+    =========================================
+    */
 
     h1 {
-      margin: 8px 0 4px;
-      font-size: 1.35rem;
+      margin: 3px 0;
+
+      font-size: 1.15rem;
     }
 
+
     .intro {
-      margin: 5px 5px 12px;
-      font-size: 0.9rem;
-      line-height: 1.6;
+      margin: 2px 0 7px;
+
+      font-size: 0.78rem;
+
       color: #ddd;
     }
 
+
+    /*
+    =========================================
+    カメラ画面
+    =========================================
+    */
+
     .camera-wrap {
+
       position: relative;
-      width: 100%;
+
+      /*
+      スマホの縦画面になるべく収める。
+
+      横幅100%か、
+      画面高さから逆算した9:16サイズの
+      小さい方を採用。
+      */
+
+      width: min(
+        100%,
+        calc((100svh - 115px) * 9 / 16)
+      );
+
+      max-width: 480px;
+
       aspect-ratio: 9 / 16;
+
+      margin: 0 auto;
 
       background: #000;
 
       overflow: hidden;
-      border-radius: 16px;
+
+      border-radius: 15px;
+
+      touch-action: manipulation;
     }
 
-    /* カメラ */
+
+    /*
+    =========================================
+    カメラ映像
+    =========================================
+    */
+
     #video {
+
       position: absolute;
+
       inset: 0;
 
       width: 100%;
       height: 100%;
 
       object-fit: cover;
+
       background: #000;
+
+      transform-origin: center center;
     }
 
-    /* フレーム画像 */
+
+    /*
+    =========================================
+    フレーム
+    =========================================
+    */
+
     #frameOverlay {
+
       position: absolute;
+
       inset: 0;
 
       width: 100%;
@@ -85,9 +161,17 @@
       pointer-events: none;
     }
 
-    /* 撮影結果 */
+
+    /*
+    =========================================
+    撮影結果
+    =========================================
+    */
+
     #resultImage {
+
       position: absolute;
+
       inset: 0;
 
       width: 100%;
@@ -97,136 +181,412 @@
 
       background: #000;
 
-      z-index: 3;
+      z-index: 8;
 
       display: none;
     }
 
-    #status {
-      min-height: 1.5em;
 
-      margin: 10px 0;
+    /*
+    =========================================
+    撮影中のHUD
+    =========================================
+    */
 
-      color: #ddd;
+    #cameraHud {
 
-      font-size: 0.9rem;
+      position: absolute;
+
+      inset: 0;
+
+      z-index: 10;
+
+      pointer-events: none;
     }
 
-    .frame-name {
-      margin: 7px 0;
 
-      font-size: 0.85rem;
+    /*
+    =========================================
+    上部ボタン
+    =========================================
+    */
 
-      color: #bbb;
-    }
+    .top-controls {
 
-    .controls {
+      position: absolute;
+
+      top: 10px;
+      left: 8px;
+      right: 8px;
+
       display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      pointer-events: none;
+    }
+
+
+    .frame-controls {
+
+      display: flex;
+
+      gap: 5px;
+
+      pointer-events: auto;
+    }
+
+
+    .hud-button {
+
+      border: 1px solid rgba(255,255,255,0.7);
+
+      background: rgba(0,0,0,0.55);
+
+      color: white;
+
+      border-radius: 18px;
+
+      padding: 7px 10px;
+
+      min-width: 0;
+
+      font-size: 0.8rem;
+
+      cursor: pointer;
+
+      backdrop-filter: blur(4px);
+    }
+
+
+    #frameCounter {
+
+      background: rgba(0,0,0,0.55);
+
+      border-radius: 15px;
+
+      padding: 6px 9px;
+
+      font-size: 0.75rem;
+
+      white-space: nowrap;
+    }
+
+
+    /*
+    =========================================
+    ズーム
+    =========================================
+    */
+
+    .zoom-control {
+
+      position: absolute;
+
+      left: 14px;
+      right: 14px;
+
+      bottom: 94px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+
+      padding: 7px 12px;
+
+      border-radius: 22px;
+
+      background: rgba(0,0,0,0.55);
+
+      color: white;
+
+      pointer-events: auto;
+
+      backdrop-filter: blur(4px);
+    }
+
+
+    .zoom-control input {
+
+      flex: 1;
+
+      min-width: 0;
+    }
+
+
+    #zoomLabel {
+
+      width: 42px;
+
+      font-size: 0.8rem;
+
+      font-weight: bold;
+
+      white-space: nowrap;
+    }
+
+
+    /*
+    =========================================
+    シャッター
+    =========================================
+    */
+
+    #captureBtn {
+
+      position: absolute;
+
+      left: 50%;
+      bottom: 15px;
+
+      transform: translateX(-50%);
+
+      width: 66px;
+      height: 66px;
+
+      padding: 0;
+
+      min-width: 0;
+
+      border-radius: 50%;
+
+      border: 5px solid white;
+
+      background: rgba(255,255,255,0.25);
+
+      cursor: pointer;
+
+      pointer-events: auto;
+    }
+
+
+    #captureBtn::after {
+
+      content: "";
+
+      position: absolute;
+
+      inset: 6px;
+
+      background: white;
+
+      border-radius: 50%;
+    }
+
+
+    #captureBtn:active {
+
+      transform:
+        translateX(-50%)
+        scale(0.92);
+    }
+
+
+    /*
+    =========================================
+    撮影結果用HUD
+    =========================================
+    */
+
+    #resultHud {
+
+      position: absolute;
+
+      inset: 0;
+
+      z-index: 20;
+
+      pointer-events: none;
+    }
+
+
+    .result-actions {
+
+      position: absolute;
+
+      left: 10px;
+      right: 10px;
+
+      bottom: 14px;
+
+      display: flex;
+
       flex-wrap: wrap;
 
       justify-content: center;
 
-      gap: 8px;
+      gap: 7px;
 
-      margin: 10px 0;
+      padding: 9px;
+
+      border-radius: 16px;
+
+      background: rgba(0,0,0,0.65);
+
+      pointer-events: auto;
+
+      backdrop-filter: blur(5px);
     }
 
-    button,
-    .download-btn {
+
+    .result-actions button,
+    .result-actions a {
+
       border: 0;
 
-      border-radius: 12px;
+      border-radius: 10px;
 
-      padding: 12px 14px;
+      padding: 10px 12px;
 
-      min-width: 130px;
+      min-width: 105px;
 
-      font-size: 0.95rem;
+      font-size: 0.82rem;
 
       font-weight: bold;
 
-      cursor: pointer;
-
       text-decoration: none;
+
+      cursor: pointer;
     }
 
-    .capture {
-      background: #e8bd65;
-      color: #111;
-    }
-
-    .secondary {
-      background: #444;
-      color: white;
-    }
 
     .retake {
-      background: #b94f4f;
+
+      background: #b85050;
+
       color: white;
     }
 
+
     .share {
+
       background: #e8bd65;
+
       color: #111;
     }
 
-    .download-btn {
-      display: inline-block;
+
+    .download {
 
       background: #4f8f63;
 
       color: white;
     }
 
-    .hidden {
-      display: none !important;
-    }
 
-    .save-help {
-      margin: 12px 8px;
+    /*
+    =========================================
+    メッセージ
+    =========================================
+    */
 
-      padding: 12px;
+    #status {
 
-      border: 1px solid #555;
+      margin: 7px 0 2px;
 
-      border-radius: 12px;
-
-      font-size: 0.85rem;
-
-      line-height: 1.6;
-
-      color: #ddd;
-
-      text-align: left;
-    }
-
-    .privacy {
-      margin: 14px 8px 20px;
+      min-height: 1.3em;
 
       font-size: 0.75rem;
 
-      line-height: 1.5;
+      color: #ddd;
+    }
+
+
+    .privacy {
+
+      margin: 2px 4px 0;
+
+      font-size: 0.65rem;
+
+      line-height: 1.4;
 
       color: #aaa;
     }
+
+
+    /*
+    =========================================
+    非表示
+    =========================================
+    */
+
+    .hidden {
+
+      display: none !important;
+    }
+
+
+    /*
+    =========================================
+    小さいスマホ
+    =========================================
+    */
+
+    @media
+    (max-height: 680px) {
+
+      h1 {
+        font-size: 1rem;
+      }
+
+      .intro {
+        display: none;
+      }
+
+      .camera-wrap {
+
+        width: min(
+          100%,
+          calc((100svh - 70px) * 9 / 16)
+        );
+
+      }
+
+      .privacy {
+        display: none;
+      }
+
+    }
+
   </style>
+
 </head>
 
 
 <body>
 
+
 <div class="container">
 
-  <h1>👹 百鬼夜行フォト 👹</h1>
 
-  <p class="intro">
-    フレームを選んで撮影しよう！<br>
-    鬼・妖怪と一緒に百鬼夜行の世界へ。
-  </p>
+  <h1>
+    👹 百鬼夜行フォト 👹
+  </h1>
 
 
-  <!-- カメラ・フレーム・完成画像 -->
-  <div class="camera-wrap">
+  <div class="intro">
+    フレームを選んで鬼・妖怪と写真を撮ろう！
+  </div>
+
+
+
+  <!--
+  =========================================
+  カメラ本体
+  =========================================
+  -->
+
+  <div
+    class="camera-wrap"
+    id="cameraWrap"
+  >
+
+
+    <!-- カメラ -->
 
     <video
       id="video"
@@ -235,1019 +595,1590 @@
       muted>
     </video>
 
+
+
+    <!-- フレーム -->
+
     <img
       id="frameOverlay"
       src="frame1.png"
-      alt="写真フレーム">
+      alt="写真フレーム"
+    >
+
+
+
+    <!-- 撮影結果 -->
 
     <img
       id="resultImage"
-      alt="撮影した写真">
+      alt="撮影した写真"
+    >
+
+
+
+    <!--
+    =========================================
+    撮影中HUD
+    =========================================
+    -->
+
+    <div id="cameraHud">
+
+
+      <!-- 上部 -->
+
+      <div class="top-controls">
+
+
+        <div class="frame-controls">
+
+
+          <button
+            type="button"
+            id="prevFrameBtn"
+            class="hud-button">
+            ◀
+          </button>
+
+
+          <span id="frameCounter">
+            1 / 2
+          </span>
+
+
+          <button
+            type="button"
+            id="nextFrameBtn"
+            class="hud-button">
+            ▶
+          </button>
+
+
+        </div>
+
+
+
+        <button
+          type="button"
+          id="switchCameraBtn"
+          class="hud-button">
+          🔄 カメラ
+        </button>
+
+
+      </div>
+
+
+
+      <!-- ズーム -->
+
+      <div class="zoom-control">
+
+
+        <span>
+          🔍
+        </span>
+
+
+        <input
+          id="zoomSlider"
+          type="range"
+          min="1"
+          max="3"
+          step="0.1"
+          value="1"
+        >
+
+
+        <span id="zoomLabel">
+          1.0×
+        </span>
+
+
+      </div>
+
+
+
+      <!-- シャッター -->
+
+      <button
+        type="button"
+        id="captureBtn"
+        aria-label="撮影">
+      </button>
+
+
+    </div>
+
+
+
+    <!--
+    =========================================
+    撮影結果HUD
+    =========================================
+    -->
+
+    <div
+      id="resultHud"
+      class="hidden"
+    >
+
+
+      <div class="result-actions">
+
+
+        <button
+          type="button"
+          id="retakeBtn"
+          class="retake">
+          ↩ 撮り直す
+        </button>
+
+
+        <button
+          type="button"
+          id="shareBtn"
+          class="share">
+          📱 保存・共有
+        </button>
+
+
+        <a
+          id="downloadBtn"
+          class="download"
+          download="hyakkiyagyo-photo.png">
+          ⬇ 保存
+        </a>
+
+
+      </div>
+
+
+    </div>
+
 
   </div>
 
+
+
+  <!-- 状態表示 -->
 
   <div id="status">
     カメラを起動しています…
   </div>
 
-  <div
-    id="frameName"
-    class="frame-name">
-    フレーム 1 / 2
-  </div>
 
 
-  <!-- 撮影前の操作 -->
-  <div
-    id="liveControls"
-    class="controls">
-
-    <button
-      id="prevFrameBtn"
-      class="secondary">
-      ◀ 前のフレーム
-    </button>
-
-    <button
-      id="nextFrameBtn"
-      class="secondary">
-      次のフレーム ▶
-    </button>
-
-    <button
-      id="switchCameraBtn"
-      class="secondary">
-      🔄 カメラ切替
-    </button>
-
-    <button
-      id="captureBtn"
-      class="capture">
-      📸 撮影
-    </button>
-
-  </div>
-
-
-  <!-- 撮影後の操作 -->
-  <div
-    id="resultControls"
-    class="controls hidden">
-
-    <button
-      id="retakeBtn"
-      class="retake">
-      ↩ 撮り直す
-    </button>
-
-    <button
-      id="shareBtn"
-      class="share">
-      📱 写真を保存・共有
-    </button>
-
-    <a
-      id="downloadBtn"
-      class="download-btn"
-      download="hyakkiyagyo-photo.png">
-      ⬇ ダウンロード
-    </a>
-
-  </div>
-
-
-  <!-- 撮影後だけ表示 -->
-  <div
-    id="saveHelp"
-    class="save-help hidden">
-
-    <strong>スマホで保存する場合</strong><br>
-
-    「写真を保存・共有」を押して、
-    表示されたメニューから
-    「写真に保存」「画像を保存」などを選んでください。<br><br>
-
-    うまく保存できない場合は、
-    上の完成写真を長押しして保存できることがあります。
-
-  </div>
-
+  <!-- 個人情報説明 -->
 
   <div class="privacy">
 
-    このページはカメラを使用します。<br>
-
-    撮影した写真は、この端末の中だけで処理されます。<br>
-
-    写真を学校や外部サーバーへ送信・保存する機能はありません。
+    撮影画像はこの端末内だけで処理されます。
+    学校や外部サーバーには送信・保存されません。
 
   </div>
+
 
 </div>
 
 
+
 <script>
 
-  /*
-  =============================================
-  基本設定
-  =============================================
-  */
 
-  const frames = [
-    "frame1.png",
-    "frame2.png"
-  ];
+/*
+=================================================
+フレーム設定
+=================================================
 
-  /*
-  false ＝ 最初は背面カメラ
-  true  ＝ 最初はインカメラ
-  */
+フレームを増やしたければ、
 
-  let useFrontCamera = false;
+"frame3.png"
+
+などを追加するだけ。
+
+*/
 
 
-  /*
-  =============================================
-  HTML要素
-  =============================================
-  */
+const frames = [
 
-  const video =
-    document.getElementById("video");
+  "frame1.png",
+  "frame2.png"
 
-  const frameOverlay =
-    document.getElementById("frameOverlay");
-
-  const resultImage =
-    document.getElementById("resultImage");
-
-  const statusEl =
-    document.getElementById("status");
-
-  const frameName =
-    document.getElementById("frameName");
-
-  const liveControls =
-    document.getElementById("liveControls");
-
-  const resultControls =
-    document.getElementById("resultControls");
-
-  const saveHelp =
-    document.getElementById("saveHelp");
-
-  const prevFrameBtn =
-    document.getElementById("prevFrameBtn");
-
-  const nextFrameBtn =
-    document.getElementById("nextFrameBtn");
-
-  const switchCameraBtn =
-    document.getElementById("switchCameraBtn");
-
-  const captureBtn =
-    document.getElementById("captureBtn");
-
-  const retakeBtn =
-    document.getElementById("retakeBtn");
-
-  const shareBtn =
-    document.getElementById("shareBtn");
-
-  const downloadBtn =
-    document.getElementById("downloadBtn");
+];
 
 
-  /*
-  =============================================
-  状態
-  =============================================
-  */
 
-  let currentFrameIndex = 0;
+/*
+=================================================
+初期カメラ
 
-  let currentStream = null;
+false
+→ 背面カメラ
 
-  let capturedBlob = null;
-
-  let capturedObjectUrl = null;
-
-
-  /*
-  =============================================
-  表示メッセージ
-  =============================================
-  */
-
-  function setStatus(message) {
-
-    statusEl.textContent = message;
-
-  }
+true
+→ インカメラ
+=================================================
+*/
 
 
-  /*
-  =============================================
-  フレーム更新
-  =============================================
-  */
-
-  function updateFrame() {
-
-    frameOverlay.src =
-      frames[currentFrameIndex];
-
-    frameName.textContent =
-      `フレーム ${currentFrameIndex + 1} / ${frames.length}`;
-
-  }
+let useFrontCamera = false;
 
 
-  /*
-  =============================================
-  フレーム切替
-  =============================================
-  */
 
-  prevFrameBtn.addEventListener(
-    "click",
-    () => {
+/*
+=================================================
+状態
+=================================================
+*/
 
-      currentFrameIndex =
-        (
-          currentFrameIndex
-          - 1
-          + frames.length
-        )
-        %
-        frames.length;
 
-      updateFrame();
+let currentFrameIndex = 0;
 
-    }
+let currentStream = null;
+
+let zoomLevel = 1;
+
+let capturedBlob = null;
+
+let capturedObjectUrl = null;
+
+
+
+/*
+=================================================
+HTML要素
+=================================================
+*/
+
+
+const video =
+  document.getElementById(
+    "video"
   );
 
 
-  nextFrameBtn.addEventListener(
-    "click",
-    () => {
-
-      currentFrameIndex =
-        (
-          currentFrameIndex
-          + 1
-        )
-        %
-        frames.length;
-
-      updateFrame();
-
-    }
+const frameOverlay =
+  document.getElementById(
+    "frameOverlay"
   );
 
 
-  /*
-  =============================================
-  カメラ起動
-  =============================================
-  */
+const resultImage =
+  document.getElementById(
+    "resultImage"
+  );
 
-  async function startCamera() {
 
-    try {
+const cameraHud =
+  document.getElementById(
+    "cameraHud"
+  );
 
-      setStatus(
-        "カメラを起動しています…"
+
+const resultHud =
+  document.getElementById(
+    "resultHud"
+  );
+
+
+const statusEl =
+  document.getElementById(
+    "status"
+  );
+
+
+const frameCounter =
+  document.getElementById(
+    "frameCounter"
+  );
+
+
+const prevFrameBtn =
+  document.getElementById(
+    "prevFrameBtn"
+  );
+
+
+const nextFrameBtn =
+  document.getElementById(
+    "nextFrameBtn"
+  );
+
+
+const switchCameraBtn =
+  document.getElementById(
+    "switchCameraBtn"
+  );
+
+
+const zoomSlider =
+  document.getElementById(
+    "zoomSlider"
+  );
+
+
+const zoomLabel =
+  document.getElementById(
+    "zoomLabel"
+  );
+
+
+const captureBtn =
+  document.getElementById(
+    "captureBtn"
+  );
+
+
+const retakeBtn =
+  document.getElementById(
+    "retakeBtn"
+  );
+
+
+const shareBtn =
+  document.getElementById(
+    "shareBtn"
+  );
+
+
+const downloadBtn =
+  document.getElementById(
+    "downloadBtn"
+  );
+
+
+
+/*
+=================================================
+メッセージ
+=================================================
+*/
+
+
+function setStatus(
+  message
+) {
+
+  statusEl.textContent =
+    message;
+
+}
+
+
+
+/*
+=================================================
+フレーム切替
+=================================================
+*/
+
+
+function updateFrame() {
+
+
+  frameOverlay.src =
+    frames[
+      currentFrameIndex
+    ];
+
+
+  frameCounter.textContent =
+    `${
+      currentFrameIndex + 1
+    } / ${
+      frames.length
+    }`;
+
+}
+
+
+
+prevFrameBtn.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    currentFrameIndex =
+
+      (
+        currentFrameIndex
+        -
+        1
+        +
+        frames.length
+      )
+
+      %
+
+      frames.length;
+
+
+    updateFrame();
+
+  }
+
+);
+
+
+
+nextFrameBtn.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    currentFrameIndex =
+
+      (
+        currentFrameIndex
+        +
+        1
+      )
+
+      %
+
+      frames.length;
+
+
+    updateFrame();
+
+  }
+
+);
+
+
+
+/*
+=================================================
+プレビュー変形
+
+背面：
+普通
+
+前面：
+鏡像
+
+その上からズーム
+=================================================
+*/
+
+
+function applyPreviewTransform() {
+
+
+  if (
+    useFrontCamera
+  ) {
+
+
+    video.style.transform =
+
+      `scaleX(-1) scale(${zoomLevel})`;
+
+
+  }
+
+  else {
+
+
+    video.style.transform =
+
+      `scale(${zoomLevel})`;
+
+
+  }
+
+}
+
+
+
+/*
+=================================================
+ズーム
+=================================================
+*/
+
+
+zoomSlider.addEventListener(
+
+  "input",
+
+  () => {
+
+
+    zoomLevel =
+      Number(
+        zoomSlider.value
       );
 
 
-      /*
-      以前のカメラを停止
-      */
-
-      if (currentStream) {
-
-        currentStream
-          .getTracks()
-          .forEach(
-            track => track.stop()
-          );
-
-      }
+    zoomLabel.textContent =
+      `${zoomLevel.toFixed(1)}×`;
 
 
-      /*
-      カメラ設定
-      */
+    applyPreviewTransform();
 
-      const constraints = {
+  }
 
-        video: {
+);
 
-          facingMode:
-            useFrontCamera
-              ? "user"
-              : "environment",
 
-          width: {
-            ideal: 1080
-          },
 
-          height: {
-            ideal: 1920
-          }
+/*
+=================================================
+カメラ起動
+=================================================
+*/
+
+
+async function startCamera() {
+
+
+  try {
+
+
+    setStatus(
+      "カメラを起動しています…"
+    );
+
+
+    /*
+    前のカメラ停止
+    */
+
+
+    if (
+      currentStream
+    ) {
+
+
+      currentStream
+        .getTracks()
+        .forEach(
+
+          track =>
+            track.stop()
+
+        );
+
+    }
+
+
+
+    /*
+    カメラ条件
+    */
+
+
+    const constraints = {
+
+
+      video: {
+
+
+        facingMode:
+
+          useFrontCamera
+
+            ? {
+                ideal:
+                  "user"
+              }
+
+            : {
+                ideal:
+                  "environment"
+              },
+
+
+        width: {
+
+          ideal: 1920
 
         },
 
-        audio: false
 
-      };
+        height: {
 
+          ideal: 1080
 
-      /*
-      カメラ取得
-      */
-
-      currentStream =
-        await navigator
-          .mediaDevices
-          .getUserMedia(
-            constraints
-          );
+        }
 
 
-      video.srcObject =
-        currentStream;
+      },
 
 
-      /*
-      インカメラだけ
-      鏡のように左右反転
-      */
-
-      video.style.transform =
-        useFrontCamera
-          ? "scaleX(-1)"
-          : "scaleX(1)";
+      audio: false
 
 
-      await video.play();
+    };
 
 
-      setStatus(
-        useFrontCamera
-          ? "インカメラで撮影できます。"
-          : "背面カメラで撮影できます。"
-      );
 
-    }
+    /*
+    カメラ取得
+    */
 
-    catch (error) {
 
-      console.error(error);
+    currentStream =
 
-      setStatus(
-        "カメラを起動できませんでした。カメラの許可を確認してください。"
-      );
+      await navigator
+        .mediaDevices
+        .getUserMedia(
+          constraints
+        );
 
-    }
+
+
+    video.srcObject =
+      currentStream;
+
+
+
+    await video.play();
+
+
+
+    applyPreviewTransform();
+
+
+
+    setStatus(
+
+      useFrontCamera
+
+        ? "インカメラで撮影できます。"
+
+        : "背面カメラで撮影できます。"
+
+    );
+
 
   }
 
-
-  /*
-  =============================================
-  カメラ切替
-  =============================================
-  */
-
-  switchCameraBtn.addEventListener(
-    "click",
-    async () => {
-
-      useFrontCamera =
-        !useFrontCamera;
-
-      await startCamera();
-
-    }
-  );
+  catch (
+    error
+  ) {
 
 
-  /*
-  =============================================
-  フレーム画像を読み込む
-  =============================================
-  */
+    console.error(
+      error
+    );
 
-  function loadImage(src) {
 
-    return new Promise(
-      (resolve, reject) => {
-
-        const image =
-          new Image();
-
-        image.onload =
-          () => resolve(image);
-
-        image.onerror =
-          () => reject(
-            new Error(
-              "フレーム画像を読み込めませんでした。"
-            )
-          );
-
-        image.src = src;
-
-      }
+    setStatus(
+      "カメラを起動できませんでした。カメラの許可を確認してください。"
     );
 
   }
 
+}
 
-  /*
-  =============================================
-  撮影
-  =============================================
-  */
 
-  captureBtn.addEventListener(
-    "click",
-    async () => {
 
-      try {
+/*
+=================================================
+カメラ切替
+=================================================
+*/
 
-        /*
-        カメラ準備確認
-        */
 
-        if (
-          !video.videoWidth
-          ||
-          !video.videoHeight
-        ) {
+switchCameraBtn.addEventListener(
 
-          setStatus(
-            "カメラの準備中です。少し待ってから撮影してください。"
+  "click",
+
+  async () => {
+
+
+    useFrontCamera =
+      !useFrontCamera;
+
+
+    await startCamera();
+
+  }
+
+);
+
+
+
+/*
+=================================================
+画像読み込み
+=================================================
+*/
+
+
+function loadImage(
+  src
+) {
+
+
+  return new Promise(
+
+    (
+      resolve,
+      reject
+    ) => {
+
+
+      const image =
+        new Image();
+
+
+      image.onload =
+
+        () =>
+          resolve(
+            image
           );
 
-          return;
 
-        }
+      image.onerror =
 
+        () =>
+          reject(
 
-        setStatus(
-          "撮影しています…"
-        );
-
-
-        /*
-        1080 × 1920 の完成画像
-        */
-
-        const canvas =
-          document.createElement(
-            "canvas"
-          );
-
-        canvas.width = 1080;
-        canvas.height = 1920;
-
-
-        const ctx =
-          canvas.getContext(
-            "2d"
-          );
-
-
-        /*
-        カメラ映像サイズ
-        */
-
-        const videoWidth =
-          video.videoWidth;
-
-        const videoHeight =
-          video.videoHeight;
-
-        const canvasWidth =
-          canvas.width;
-
-        const canvasHeight =
-          canvas.height;
-
-
-        /*
-        カメラ映像と
-        9:16キャンバスの比率
-        */
-
-        const videoRatio =
-          videoWidth
-          /
-          videoHeight;
-
-        const canvasRatio =
-          canvasWidth
-          /
-          canvasHeight;
-
-
-        let sx;
-        let sy;
-        let sourceWidth;
-        let sourceHeight;
-
-
-        /*
-        カメラ映像を
-        9:16に合わせて中央トリミング
-        */
-
-        if (
-          videoRatio
-          >
-          canvasRatio
-        ) {
-
-          sourceHeight =
-            videoHeight;
-
-          sourceWidth =
-            videoHeight
-            *
-            canvasRatio;
-
-          sx =
-            (
-              videoWidth
-              -
-              sourceWidth
+            new Error(
+              "フレーム画像を読み込めませんでした。"
             )
-            /
-            2;
-
-          sy = 0;
-
-        }
-
-        else {
-
-          sourceWidth =
-            videoWidth;
-
-          sourceHeight =
-            videoWidth
-            /
-            canvasRatio;
-
-          sx = 0;
-
-          sy =
-            (
-              videoHeight
-              -
-              sourceHeight
-            )
-            /
-            2;
-
-        }
-
-
-        /*
-        カメラ映像を描画
-        */
-
-        if (
-          useFrontCamera
-        ) {
-
-          /*
-          インカメラは
-          プレビューと同じ向きにする
-          */
-
-          ctx.save();
-
-          ctx.translate(
-            canvasWidth,
-            0
-          );
-
-          ctx.scale(
-            -1,
-            1
-          );
-
-          ctx.drawImage(
-
-            video,
-
-            sx,
-            sy,
-            sourceWidth,
-            sourceHeight,
-
-            0,
-            0,
-            canvasWidth,
-            canvasHeight
 
           );
 
-          ctx.restore();
 
-        }
-
-        else {
-
-          ctx.drawImage(
-
-            video,
-
-            sx,
-            sy,
-            sourceWidth,
-            sourceHeight,
-
-            0,
-            0,
-            canvasWidth,
-            canvasHeight
-
-          );
-
-        }
-
-
-        /*
-        フレーム画像を読み込み
-        */
-
-        const frameImage =
-          await loadImage(
-            frames[
-              currentFrameIndex
-            ]
-          );
-
-
-        /*
-        フレームを上から重ねる
-        */
-
-        ctx.drawImage(
-
-          frameImage,
-
-          0,
-          0,
-          canvasWidth,
-          canvasHeight
-
-        );
-
-
-        /*
-        PNG Blobを生成
-        */
-
-        capturedBlob =
-          await new Promise(
-            resolve => {
-
-              canvas.toBlob(
-                resolve,
-                "image/png"
-              );
-
-            }
-          );
-
-
-        if (!capturedBlob) {
-
-          throw new Error(
-            "画像生成に失敗しました。"
-          );
-
-        }
-
-
-        /*
-        古いURLがあれば解放
-        */
-
-        if (
-          capturedObjectUrl
-        ) {
-
-          URL.revokeObjectURL(
-            capturedObjectUrl
-          );
-
-        }
-
-
-        /*
-        新しい画像URL
-        */
-
-        capturedObjectUrl =
-          URL.createObjectURL(
-            capturedBlob
-          );
-
-
-        /*
-        完成画像表示
-        */
-
-        resultImage.src =
-          capturedObjectUrl;
-
-        resultImage.style.display =
-          "block";
-
-
-        /*
-        ダウンロード先設定
-        */
-
-        downloadBtn.href =
-          capturedObjectUrl;
-
-
-        /*
-        撮影画面を隠す
-        */
-
-        video.classList.add(
-          "hidden"
-        );
-
-        frameOverlay.classList.add(
-          "hidden"
-        );
-
-        frameName.classList.add(
-          "hidden"
-        );
-
-        liveControls.classList.add(
-          "hidden"
-        );
-
-
-        /*
-        保存画面を表示
-        */
-
-        resultControls
-          .classList
-          .remove(
-            "hidden"
-          );
-
-        saveHelp
-          .classList
-          .remove(
-            "hidden"
-          );
-
-
-        setStatus(
-          "撮影完了！写真を保存してください。"
-        );
-
-      }
-
-      catch (error) {
-
-        console.error(error);
-
-        setStatus(
-          "撮影に失敗しました。フレーム画像やカメラを確認してください。"
-        );
-
-      }
+      image.src =
+        src;
 
     }
+
   );
 
+}
 
-  /*
-  =============================================
-  スマホ共有・保存
-  =============================================
-  */
 
-  shareBtn.addEventListener(
-    "click",
-    async () => {
 
-      if (!capturedBlob) {
+/*
+=================================================
+撮影
+=================================================
+*/
+
+
+captureBtn.addEventListener(
+
+  "click",
+
+  async () => {
+
+
+    try {
+
+
+      /*
+      カメラ準備確認
+      */
+
+
+      if (
+
+        !video.videoWidth
+
+        ||
+
+        !video.videoHeight
+
+      ) {
+
 
         setStatus(
-          "写真がありません。もう一度撮影してください。"
+          "カメラ準備中です。少し待ってください。"
         );
+
 
         return;
 
       }
 
 
+
+      setStatus(
+        "撮影しています…"
+      );
+
+
+
       /*
-      Blob → File
+      完成画像
+
+      フレームと同じ
+      1080 × 1920
       */
 
-      const photoFile =
-        new File(
 
-          [capturedBlob],
+      const canvas =
 
-          "hyakkiyagyo-photo.png",
+        document.createElement(
+          "canvas"
+        );
 
-          {
-            type: "image/png"
+
+      canvas.width =
+        1080;
+
+
+      canvas.height =
+        1920;
+
+
+
+      const ctx =
+
+        canvas.getContext(
+          "2d"
+        );
+
+
+
+      const videoWidth =
+        video.videoWidth;
+
+
+      const videoHeight =
+        video.videoHeight;
+
+
+      const canvasWidth =
+        canvas.width;
+
+
+      const canvasHeight =
+        canvas.height;
+
+
+
+      const videoRatio =
+
+        videoWidth
+
+        /
+
+        videoHeight;
+
+
+
+      const canvasRatio =
+
+        canvasWidth
+
+        /
+
+        canvasHeight;
+
+
+
+      let sx;
+      let sy;
+
+      let sourceWidth;
+      let sourceHeight;
+
+
+
+      /*
+      =========================================
+      まず9:16に中央トリミング
+      =========================================
+      */
+
+
+      if (
+
+        videoRatio
+
+        >
+
+        canvasRatio
+
+      ) {
+
+
+        sourceHeight =
+          videoHeight;
+
+
+        sourceWidth =
+
+          videoHeight
+
+          *
+
+          canvasRatio;
+
+
+        sx =
+
+          (
+            videoWidth
+            -
+            sourceWidth
+          )
+
+          /
+
+          2;
+
+
+        sy = 0;
+
+
+      }
+
+      else {
+
+
+        sourceWidth =
+          videoWidth;
+
+
+        sourceHeight =
+
+          videoWidth
+
+          /
+
+          canvasRatio;
+
+
+        sx = 0;
+
+
+        sy =
+
+          (
+            videoHeight
+            -
+            sourceHeight
+          )
+
+          /
+
+          2;
+
+
+      }
+
+
+
+      /*
+      =========================================
+      ズーム分だけ
+      さらに中央を切り取る
+      =========================================
+      */
+
+
+      const originalWidth =
+        sourceWidth;
+
+
+      const originalHeight =
+        sourceHeight;
+
+
+
+      sourceWidth =
+
+        originalWidth
+
+        /
+
+        zoomLevel;
+
+
+
+      sourceHeight =
+
+        originalHeight
+
+        /
+
+        zoomLevel;
+
+
+
+      sx +=
+
+        (
+          originalWidth
+          -
+          sourceWidth
+        )
+
+        /
+
+        2;
+
+
+
+      sy +=
+
+        (
+          originalHeight
+          -
+          sourceHeight
+        )
+
+        /
+
+        2;
+
+
+
+      /*
+      =========================================
+      カメラ画像描画
+      =========================================
+      */
+
+
+      if (
+        useFrontCamera
+      ) {
+
+
+        /*
+        インカメラ
+        鏡像保存
+        */
+
+
+        ctx.save();
+
+
+        ctx.translate(
+          canvasWidth,
+          0
+        );
+
+
+        ctx.scale(
+          -1,
+          1
+        );
+
+
+        ctx.drawImage(
+
+          video,
+
+          sx,
+          sy,
+
+          sourceWidth,
+          sourceHeight,
+
+          0,
+          0,
+
+          canvasWidth,
+          canvasHeight
+
+        );
+
+
+        ctx.restore();
+
+
+      }
+
+      else {
+
+
+        /*
+        背面カメラ
+        */
+
+
+        ctx.drawImage(
+
+          video,
+
+          sx,
+          sy,
+
+          sourceWidth,
+          sourceHeight,
+
+          0,
+          0,
+
+          canvasWidth,
+          canvasHeight
+
+        );
+
+
+      }
+
+
+
+      /*
+      =========================================
+      フレームを重ねる
+      =========================================
+      */
+
+
+      const frameImage =
+
+        await loadImage(
+
+          frames[
+            currentFrameIndex
+          ]
+
+        );
+
+
+
+      ctx.drawImage(
+
+        frameImage,
+
+        0,
+        0,
+
+        canvasWidth,
+        canvasHeight
+
+      );
+
+
+
+      /*
+      =========================================
+      PNG生成
+      =========================================
+      */
+
+
+      capturedBlob =
+
+        await new Promise(
+
+          resolve => {
+
+
+            canvas.toBlob(
+
+              resolve,
+
+              "image/png"
+
+            );
+
           }
 
         );
 
 
-      try {
 
-        /*
-        スマホの共有機能が
-        ファイル共有に対応している場合
-        */
-
-        if (
-          navigator.share
-          &&
-          navigator.canShare
-          &&
-          navigator.canShare({
-            files: [photoFile]
-          })
-        ) {
-
-          await navigator.share({
-
-            files: [
-              photoFile
-            ],
-
-            title:
-              "百鬼夜行フォト"
-
-          });
+      if (
+        !capturedBlob
+      ) {
 
 
-          setStatus(
-            "共有メニューから「写真に保存」「画像を保存」などを選んでください。"
-          );
-
-        }
-
-        else {
-
-          /*
-          非対応端末では
-          ダウンロード
-          */
-
-          downloadBtn.click();
-
-          setStatus(
-            "画像をダウンロードしました。"
-          );
-
-        }
+        throw new Error(
+          "画像生成失敗"
+        );
 
       }
 
-      catch (error) {
-
-        console.log(error);
 
 
-        /*
-        ユーザーが共有画面を
-        閉じただけならエラー扱いしない
-        */
+      /*
+      古い画像URLを削除
+      */
 
-        if (
-          error.name
-          !==
-          "AbortError"
-        ) {
 
-          setStatus(
-            "保存できない場合は、完成写真を長押しして保存してください。"
-          );
+      if (
+        capturedObjectUrl
+      ) {
 
-        }
+
+        URL.revokeObjectURL(
+          capturedObjectUrl
+        );
 
       }
 
-    }
-  );
 
 
-  /*
-  =============================================
-  撮り直し
-  =============================================
-  */
+      /*
+      新画像URL
+      */
 
-  retakeBtn.addEventListener(
-    "click",
-    () => {
 
-      resultImage.style.display =
-        "none";
+      capturedObjectUrl =
+
+        URL.createObjectURL(
+          capturedBlob
+        );
+
+
+
+      /*
+      撮影結果
+      */
+
 
       resultImage.src =
-        "";
+        capturedObjectUrl;
 
 
-      video.classList.remove(
+      resultImage.style.display =
+        "block";
+
+
+      downloadBtn.href =
+        capturedObjectUrl;
+
+
+
+      /*
+      撮影HUD OFF
+      */
+
+
+      cameraHud.classList.add(
         "hidden"
       );
 
-      frameOverlay
-        .classList
-        .remove(
-          "hidden"
-        );
 
-      frameName
-        .classList
-        .remove(
-          "hidden"
-        );
-
-      liveControls
-        .classList
-        .remove(
-          "hidden"
-        );
+      frameOverlay.classList.add(
+        "hidden"
+      );
 
 
-      resultControls
-        .classList
-        .add(
-          "hidden"
-        );
+      video.classList.add(
+        "hidden"
+      );
 
-      saveHelp
-        .classList
-        .add(
-          "hidden"
-        );
+
+
+      /*
+      結果HUD ON
+      */
+
+
+      resultHud.classList.remove(
+        "hidden"
+      );
+
 
 
       setStatus(
-        "撮り直しできます。"
+        "撮影完了！保存してください。"
+      );
+
+
+    }
+
+    catch (
+      error
+    ) {
+
+
+      console.error(
+        error
+      );
+
+
+      setStatus(
+        "撮影に失敗しました。もう一度試してください。"
       );
 
     }
+
+  }
+
+);
+
+
+
+/*
+=================================================
+スマホ共有
+=================================================
+*/
+
+
+shareBtn.addEventListener(
+
+  "click",
+
+  async () => {
+
+
+    if (
+      !capturedBlob
+    ) {
+
+
+      setStatus(
+        "写真データがありません。"
+      );
+
+
+      return;
+
+    }
+
+
+
+    const photoFile =
+
+      new File(
+
+        [
+          capturedBlob
+        ],
+
+        "hyakkiyagyo-photo.png",
+
+        {
+
+          type:
+            "image/png"
+
+        }
+
+      );
+
+
+
+    try {
+
+
+      /*
+      スマホ共有対応
+      */
+
+
+      if (
+
+        navigator.share
+
+        &&
+
+        navigator.canShare
+
+        &&
+
+        navigator.canShare({
+
+          files: [
+            photoFile
+          ]
+
+        })
+
+      ) {
+
+
+        await navigator.share({
+
+
+          files: [
+            photoFile
+          ],
+
+
+          title:
+            "百鬼夜行フォト"
+
+
+        });
+
+
+
+        setStatus(
+          "共有メニューから「写真に保存」「画像を保存」などを選んでください。"
+        );
+
+
+      }
+
+      else {
+
+
+        /*
+        非対応なら
+        通常ダウンロード
+        */
+
+
+        downloadBtn.click();
+
+
+        setStatus(
+          "画像をダウンロードしました。"
+        );
+
+
+      }
+
+
+    }
+
+    catch (
+      error
+    ) {
+
+
+      console.log(
+        error
+      );
+
+
+      if (
+
+        error.name
+
+        !==
+
+        "AbortError"
+
+      ) {
+
+
+        setStatus(
+          "保存できない場合は、写真を長押しして保存してください。"
+        );
+
+
+      }
+
+
+    }
+
+  }
+
+);
+
+
+
+/*
+=================================================
+撮り直し
+=================================================
+*/
+
+
+retakeBtn.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    resultImage.style.display =
+      "none";
+
+
+    resultImage.src =
+      "";
+
+
+
+    /*
+    カメラ復活
+    */
+
+
+    video.classList.remove(
+      "hidden"
+    );
+
+
+    frameOverlay.classList.remove(
+      "hidden"
+    );
+
+
+    cameraHud.classList.remove(
+      "hidden"
+    );
+
+
+
+    /*
+    結果ボタン非表示
+    */
+
+
+    resultHud.classList.add(
+      "hidden"
+    );
+
+
+
+    setStatus(
+      "撮り直しできます。"
+    );
+
+
+  }
+
+);
+
+
+
+/*
+=================================================
+起動
+=================================================
+*/
+
+
+updateFrame();
+
+
+
+if (
+
+  !navigator.mediaDevices
+
+  ||
+
+  !navigator.mediaDevices.getUserMedia
+
+) {
+
+
+  setStatus(
+    "このブラウザはカメラ機能に対応していません。"
   );
 
 
-  /*
-  =============================================
-  起動
-  =============================================
-  */
+}
 
-  updateFrame();
+else {
 
 
-  if (
-    !navigator.mediaDevices
-    ||
-    !navigator.mediaDevices.getUserMedia
-  ) {
+  startCamera();
 
-    setStatus(
-      "このブラウザはカメラ機能に対応していません。"
-    );
 
-  }
+}
 
-  else {
-
-    startCamera();
-
-  }
 
 </script>
 
+
 </body>
+
 </html>
