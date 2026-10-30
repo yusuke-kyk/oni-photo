@@ -74,7 +74,7 @@
       <div class="picker">
         <button class="round" id="prev" aria-label="前のフレーム">◀ 前へ</button>
         <div class="picker-info">
-          <strong id="frameCount">01 / 16</strong>
+          <strong id="frameCount">01 / 12</strong>
           <small>フレームを切り替える</small>
         </div>
         <button class="round" id="next" aria-label="次のフレーム">次へ ▶</button>
@@ -101,8 +101,8 @@
 (() => {
   'use strict';
 
-  // GitHub の index.html と同じ場所に、この16枚を置いてください。
-  const frames = Array.from({length: 16}, (_, i) =>
+  // GitHub の index.html と同じ場所に、この12枚を置いてください。
+  const frames = Array.from({length: 12}, (_, i) =>
     `photo_frame${String(i + 1).padStart(2, '0')}.png`
   );
   const OUT_W = 1080;
