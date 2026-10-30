@@ -1,2184 +1,303 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
-
-  <title>百鬼夜行フォト</title>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101018">
+  <title>百鬼夜行｜妖怪フォト</title>
   <style>
-
-    * {
-      box-sizing: border-box;
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: #101018; color: #fff; font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
+    button, input { font: inherit; }
+    button { cursor: pointer; touch-action: manipulation; }
+    .app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    .header { flex: none; text-align: center; padding: 9px 12px 7px; background: #171725; z-index: 2; }
+    .header h1 { font-size: 17px; letter-spacing: .08em; margin: 0; }
+    .header p { font-size: 11px; margin: 3px 0 0; color: #bfc0ce; }
+    .camera-area { min-height: 0; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #07070c; }
+    .stage { position: relative; flex: none; overflow: hidden; background: #080810; isolation: isolate; }
+    #camera { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; display: block; transform-origin: center center; z-index: 0; }
+    #frameImage { width: 100%; height: 100%; object-fit: fill; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    .stage-message { position: absolute; left: 10px; right: 10px; bottom: 15px; z-index: 3; padding: 10px; border-radius: 10px; background: rgba(0,0,0,.72); font-size: 13px; text-align: center; line-height: 1.6; }
+    .stage-message[hidden], .review[hidden], .save-help[hidden] { display: none !important; }
+    .review { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: #0a0a11; }
+    .review img { width: 100%; height: 100%; display: block; object-fit: contain; }
+    .controls { flex: none; background: #171725; padding: 7px max(10px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left)); }
+    .picker { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; gap: 8px; margin-bottom: 7px; }
+    .picker-info { text-align: center; }
+    .picker-info strong { font-size: 15px; }
+    .picker-info small { font-size: 11px; color: #bfc0ce; display: block; }
+    .round { border: 1px solid #545469; background: #2b2b3a; border-radius: 12px; color: white; min-height: 39px; font-weight: 700; }
+    .actions { display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .secondary { border: 1px solid #57576f; background: #29293a; color: #fff; padding: 9px 12px; border-radius: 10px; min-height: 40px; font-size: 13px; }
+    .shutter { flex: none; border: 4px solid #fff; outline: 2px solid #777; outline-offset: -9px; background: #fdfdfd; border-radius: 50%; width: 61px; height: 61px; padding: 0; }
+    .shutter:active { transform: scale(.95); }
+    .zoom-line { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 6px; }
+    .zoom-line label { font-size: 12px; white-space: nowrap; }
+    .zoom-line input { width: min(220px, 60vw); accent-color: #c9b7fa; }
+    .zoom-line output { font-size: 12px; min-width: 34px; }
+    .review-actions { display: none; align-items: center; justify-content: center; gap: 12px; padding: 10px 0; }
+    .primary { background: #e8d6a0; color: #1f1b11; border: 0; padding: 11px 18px; border-radius: 10px; font-size: 15px; font-weight: 750; }
+    .save-help { font-size: 12px; line-height: 1.55; text-align: center; color: #eedfab; padding: 5px; }
+    .app.is-review .live-controls { display: none; }
+    .app.is-review .review-actions { display: flex; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #d8baff; outline-offset: 2px; }
+    @media (max-height: 620px) {
+      .header { padding: 5px 8px; }
+      .header h1 { font-size: 14px; }
+      .header p { display: none; }
+      .controls { padding-top: 4px; }
+      .picker { margin-bottom: 4px; }
+      .shutter { width: 49px; height: 49px; }
+      .zoom-line { margin-top: 3px; }
     }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-
-      background: #111;
-      color: #fff;
-
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Hiragino Kaku Gothic ProN",
-        "Yu Gothic",
-        sans-serif;
-
-      text-align: center;
-    }
-
-
-    body {
-      min-height: 100svh;
-    }
-
-
-    .container {
-      width: 100%;
-
-      max-width: 520px;
-
-      margin: 0 auto;
-
-      padding:
-        max(6px, env(safe-area-inset-top))
-        8px
-        max(8px, env(safe-area-inset-bottom));
-    }
-
-
-    /*
-    =========================================
-    タイトル
-    =========================================
-    */
-
-    h1 {
-      margin: 3px 0;
-
-      font-size: 1.15rem;
-    }
-
-
-    .intro {
-      margin: 2px 0 7px;
-
-      font-size: 0.78rem;
-
-      color: #ddd;
-    }
-
-
-    /*
-    =========================================
-    カメラ画面
-    =========================================
-    */
-
-    .camera-wrap {
-
-      position: relative;
-
-      /*
-      スマホの縦画面になるべく収める。
-
-      横幅100%か、
-      画面高さから逆算した9:16サイズの
-      小さい方を採用。
-      */
-
-      width: min(
-        100%,
-        calc((100svh - 115px) * 9 / 16)
-      );
-
-      max-width: 480px;
-
-      aspect-ratio: 9 / 16;
-
-      margin: 0 auto;
-
-      background: #000;
-
-      overflow: hidden;
-
-      border-radius: 15px;
-
-      touch-action: manipulation;
-    }
-
-
-    /*
-    =========================================
-    カメラ映像
-    =========================================
-    */
-
-    #video {
-
-      position: absolute;
-
-      inset: 0;
-
-      width: 100%;
-      height: 100%;
-
-      object-fit: cover;
-
-      background: #000;
-
-      transform-origin: center center;
-    }
-
-
-    /*
-    =========================================
-    フレーム
-    =========================================
-    */
-
-    #frameOverlay {
-
-      position: absolute;
-
-      inset: 0;
-
-      width: 100%;
-      height: 100%;
-
-      object-fit: fill;
-
-      z-index: 2;
-
-      pointer-events: none;
-    }
-
-
-    /*
-    =========================================
-    撮影結果
-    =========================================
-    */
-
-    #resultImage {
-
-      position: absolute;
-
-      inset: 0;
-
-      width: 100%;
-      height: 100%;
-
-      object-fit: contain;
-
-      background: #000;
-
-      z-index: 8;
-
-      display: none;
-    }
-
-
-    /*
-    =========================================
-    撮影中のHUD
-    =========================================
-    */
-
-    #cameraHud {
-
-      position: absolute;
-
-      inset: 0;
-
-      z-index: 10;
-
-      pointer-events: none;
-    }
-
-
-    /*
-    =========================================
-    上部ボタン
-    =========================================
-    */
-
-    .top-controls {
-
-      position: absolute;
-
-      top: 10px;
-      left: 8px;
-      right: 8px;
-
-      display: flex;
-
-      justify-content: space-between;
-
-      align-items: center;
-
-      pointer-events: none;
-    }
-
-
-    .frame-controls {
-
-      display: flex;
-
-      gap: 5px;
-
-      pointer-events: auto;
-    }
-
-
-    .hud-button {
-
-      border: 1px solid rgba(255,255,255,0.7);
-
-      background: rgba(0,0,0,0.55);
-
-      color: white;
-
-      border-radius: 18px;
-
-      padding: 7px 10px;
-
-      min-width: 0;
-
-      font-size: 0.8rem;
-
-      cursor: pointer;
-
-      backdrop-filter: blur(4px);
-    }
-
-
-    #frameCounter {
-
-      background: rgba(0,0,0,0.55);
-
-      border-radius: 15px;
-
-      padding: 6px 9px;
-
-      font-size: 0.75rem;
-
-      white-space: nowrap;
-    }
-
-
-    /*
-    =========================================
-    ズーム
-    =========================================
-    */
-
-    .zoom-control {
-
-      position: absolute;
-
-      left: 14px;
-      right: 14px;
-
-      bottom: 94px;
-
-      display: flex;
-
-      align-items: center;
-
-      gap: 9px;
-
-      padding: 7px 12px;
-
-      border-radius: 22px;
-
-      background: rgba(0,0,0,0.55);
-
-      color: white;
-
-      pointer-events: auto;
-
-      backdrop-filter: blur(4px);
-    }
-
-
-    .zoom-control input {
-
-      flex: 1;
-
-      min-width: 0;
-    }
-
-
-    #zoomLabel {
-
-      width: 42px;
-
-      font-size: 0.8rem;
-
-      font-weight: bold;
-
-      white-space: nowrap;
-    }
-
-
-    /*
-    =========================================
-    シャッター
-    =========================================
-    */
-
-    #captureBtn {
-
-      position: absolute;
-
-      left: 50%;
-      bottom: 15px;
-
-      transform: translateX(-50%);
-
-      width: 66px;
-      height: 66px;
-
-      padding: 0;
-
-      min-width: 0;
-
-      border-radius: 50%;
-
-      border: 5px solid white;
-
-      background: rgba(255,255,255,0.25);
-
-      cursor: pointer;
-
-      pointer-events: auto;
-    }
-
-
-    #captureBtn::after {
-
-      content: "";
-
-      position: absolute;
-
-      inset: 6px;
-
-      background: white;
-
-      border-radius: 50%;
-    }
-
-
-    #captureBtn:active {
-
-      transform:
-        translateX(-50%)
-        scale(0.92);
-    }
-
-
-    /*
-    =========================================
-    撮影結果用HUD
-    =========================================
-    */
-
-    #resultHud {
-
-      position: absolute;
-
-      inset: 0;
-
-      z-index: 20;
-
-      pointer-events: none;
-    }
-
-
-    .result-actions {
-
-      position: absolute;
-
-      left: 10px;
-      right: 10px;
-
-      bottom: 14px;
-
-      display: flex;
-
-      flex-wrap: wrap;
-
-      justify-content: center;
-
-      gap: 7px;
-
-      padding: 9px;
-
-      border-radius: 16px;
-
-      background: rgba(0,0,0,0.65);
-
-      pointer-events: auto;
-
-      backdrop-filter: blur(5px);
-    }
-
-
-    .result-actions button,
-    .result-actions a {
-
-      border: 0;
-
-      border-radius: 10px;
-
-      padding: 10px 12px;
-
-      min-width: 105px;
-
-      font-size: 0.82rem;
-
-      font-weight: bold;
-
-      text-decoration: none;
-
-      cursor: pointer;
-    }
-
-
-    .retake {
-
-      background: #b85050;
-
-      color: white;
-    }
-
-
-    .share {
-
-      background: #e8bd65;
-
-      color: #111;
-    }
-
-
-    .download {
-
-      background: #4f8f63;
-
-      color: white;
-    }
-
-
-    /*
-    =========================================
-    メッセージ
-    =========================================
-    */
-
-    #status {
-
-      margin: 7px 0 2px;
-
-      min-height: 1.3em;
-
-      font-size: 0.75rem;
-
-      color: #ddd;
-    }
-
-
-    .privacy {
-
-      margin: 2px 4px 0;
-
-      font-size: 0.65rem;
-
-      line-height: 1.4;
-
-      color: #aaa;
-    }
-
-
-    /*
-    =========================================
-    非表示
-    =========================================
-    */
-
-    .hidden {
-
-      display: none !important;
-    }
-
-
-    /*
-    =========================================
-    小さいスマホ
-    =========================================
-    */
-
-    @media
-    (max-height: 680px) {
-
-      h1 {
-        font-size: 1rem;
-      }
-
-      .intro {
-        display: none;
-      }
-
-      .camera-wrap {
-
-        width: min(
-          100%,
-          calc((100svh - 70px) * 9 / 16)
-        );
-
-      }
-
-      .privacy {
-        display: none;
-      }
-
-    }
-
   </style>
-
 </head>
-
-
 <body>
-
-
-<div class="container">
-
-
-  <h1>
-    👹 百鬼夜行フォト 👹
-  </h1>
-
-
-  <div class="intro">
-    フレームを選んで鬼・妖怪と写真を撮ろう！
-  </div>
-
-
-
-  <!--
-  =========================================
-  カメラ本体
-  =========================================
-  -->
-
-  <div
-    class="camera-wrap"
-    id="cameraWrap"
-  >
-
-
-    <!-- カメラ -->
-
-    <video
-      id="video"
-      autoplay
-      playsinline
-      muted>
-    </video>
-
-
-
-    <!-- フレーム -->
-
-    <img
-      id="frameOverlay"
-      src="frame1.png"
-      alt="写真フレーム"
-    >
-
-
-
-    <!-- 撮影結果 -->
-
-    <img
-      id="resultImage"
-      alt="撮影した写真"
-    >
-
-
-
-    <!--
-    =========================================
-    撮影中HUD
-    =========================================
-    -->
-
-    <div id="cameraHud">
-
-
-      <!-- 上部 -->
-
-      <div class="top-controls">
-
-
-        <div class="frame-controls">
-
-
-          <button
-            type="button"
-            id="prevFrameBtn"
-            class="hud-button">
-            ◀
-          </button>
-
-
-          <span id="frameCounter">
-            1 / 2
-          </span>
-
-
-          <button
-            type="button"
-            id="nextFrameBtn"
-            class="hud-button">
-            ▶
-          </button>
-
-
+<div class="app" id="app">
+  <header class="header">
+    <h1>百鬼夜行　妖怪フォト</h1>
+    <p>好きなフレームを選んで、妖怪と一緒に撮影しよう！</p>
+  </header>
+  <main class="camera-area" id="cameraArea">
+    <div class="stage" id="stage">
+      <video id="camera" autoplay muted playsinline webkit-playsinline></video>
+      <img id="frameImage" alt="妖怪フォトフレーム">
+      <div class="stage-message" id="message">カメラを準備しています…</div>
+      <div class="review" id="review" hidden>
+        <img id="photoPreview" alt="撮影した写真">
+      </div>
+    </div>
+  </main>
+  <footer class="controls">
+    <div class="live-controls">
+      <div class="picker">
+        <button class="round" id="prev" aria-label="前のフレーム">◀ 前へ</button>
+        <div class="picker-info">
+          <strong id="frameCount">01 / 16</strong>
+          <small>フレームを切り替える</small>
         </div>
-
-
-
-        <button
-          type="button"
-          id="switchCameraBtn"
-          class="hud-button">
-          🔄 カメラ
-        </button>
-
-
+        <button class="round" id="next" aria-label="次のフレーム">次へ ▶</button>
       </div>
-
-
-
-      <!-- ズーム -->
-
-      <div class="zoom-control">
-
-
-        <span>
-          🔍
-        </span>
-
-
-        <input
-          id="zoomSlider"
-          type="range"
-          min="1"
-          max="3"
-          step="0.1"
-          value="1"
-        >
-
-
-        <span id="zoomLabel">
-          1.0×
-        </span>
-
-
+      <div class="actions">
+        <button class="secondary" id="switchCamera">🔄 カメラ切替</button>
+        <button class="shutter" id="shutter" aria-label="写真を撮る"></button>
+        <button class="secondary" id="restart">📷 再起動</button>
       </div>
-
-
-
-      <!-- シャッター -->
-
-      <button
-        type="button"
-        id="captureBtn"
-        aria-label="撮影">
-      </button>
-
-
+      <div class="zoom-line">
+        <label for="zoom">ズーム</label>
+        <input id="zoom" type="range" min="1" max="3" value="1" step="0.1">
+        <output id="zoomValue" for="zoom">1.0×</output>
+      </div>
     </div>
-
-
-
-    <!--
-    =========================================
-    撮影結果HUD
-    =========================================
-    -->
-
-    <div
-      id="resultHud"
-      class="hidden"
-    >
-
-
-      <div class="result-actions">
-
-
-        <button
-          type="button"
-          id="retakeBtn"
-          class="retake">
-          ↩ 撮り直す
-        </button>
-
-
-        <button
-          type="button"
-          id="shareBtn"
-          class="share">
-          📱 保存・共有
-        </button>
-
-
-        <a
-          id="downloadBtn"
-          class="download"
-          download="hyakkiyagyo-photo.png">
-          ⬇ 保存
-        </a>
-
-
-      </div>
-
-
+    <div class="review-actions">
+      <button class="secondary" id="retake">↩ 撮り直す</button>
+      <button class="primary" id="save">📲 共有・保存</button>
     </div>
-
-
-  </div>
-
-
-
-  <!-- 状態表示 -->
-
-  <div id="status">
-    カメラを起動しています…
-  </div>
-
-
-
-  <!-- 個人情報説明 -->
-
-  <div class="privacy">
-
-    撮影画像はこの端末内だけで処理されます。
-    学校や外部サーバーには送信・保存されません。
-
-  </div>
-
-
+    <div class="save-help" id="saveHelp" hidden></div>
+  </footer>
 </div>
-
-
-
 <script>
+(() => {
+  'use strict';
 
-
-/*
-=================================================
-フレーム設定
-=================================================
-
-フレームを増やしたければ、
-
-"frame3.png"
-
-などを追加するだけ。
-
-*/
-
-
-const frames = [
-
-  "frame1.png",
-  "frame2.png"
-
-];
-
-
-
-/*
-=================================================
-初期カメラ
-
-false
-→ 背面カメラ
-
-true
-→ インカメラ
-=================================================
-*/
-
-
-let useFrontCamera = false;
-
-
-
-/*
-=================================================
-状態
-=================================================
-*/
-
-
-let currentFrameIndex = 0;
-
-let currentStream = null;
-
-let zoomLevel = 1;
-
-let capturedBlob = null;
-
-let capturedObjectUrl = null;
-
-
-
-/*
-=================================================
-HTML要素
-=================================================
-*/
-
-
-const video =
-  document.getElementById(
-    "video"
+  // GitHub の index.html と同じ場所に、この16枚を置いてください。
+  const frames = Array.from({length: 16}, (_, i) =>
+    `photo_frame${String(i + 1).padStart(2, '0')}.png`
   );
+  const OUT_W = 1080;
+  const OUT_H = 1920;
 
+  const el = (id) => document.getElementById(id);
+  const app = el('app'), area = el('cameraArea'), stage = el('stage');
+  const video = el('camera'), frameImage = el('frameImage');
+  const message = el('message'), frameCount = el('frameCount');
+  const zoomInput = el('zoom'), zoomValue = el('zoomValue');
+  const review = el('review'), photoPreview = el('photoPreview');
+  const saveHelp = el('saveHelp');
 
-const frameOverlay =
-  document.getElementById(
-    "frameOverlay"
-  );
+  let frameIndex = 0;
+  let isFrontCamera = false; // 最初は背面カメラ
+  let zoom = 1;
+  let stream = null;
+  let startId = 0;
+  let latestBlob = null;
+  let latestURL = null;
+  let ready = false;
 
-
-const resultImage =
-  document.getElementById(
-    "resultImage"
-  );
-
-
-const cameraHud =
-  document.getElementById(
-    "cameraHud"
-  );
-
-
-const resultHud =
-  document.getElementById(
-    "resultHud"
-  );
-
-
-const statusEl =
-  document.getElementById(
-    "status"
-  );
-
-
-const frameCounter =
-  document.getElementById(
-    "frameCounter"
-  );
-
-
-const prevFrameBtn =
-  document.getElementById(
-    "prevFrameBtn"
-  );
-
-
-const nextFrameBtn =
-  document.getElementById(
-    "nextFrameBtn"
-  );
-
-
-const switchCameraBtn =
-  document.getElementById(
-    "switchCameraBtn"
-  );
-
-
-const zoomSlider =
-  document.getElementById(
-    "zoomSlider"
-  );
-
-
-const zoomLabel =
-  document.getElementById(
-    "zoomLabel"
-  );
-
-
-const captureBtn =
-  document.getElementById(
-    "captureBtn"
-  );
-
-
-const retakeBtn =
-  document.getElementById(
-    "retakeBtn"
-  );
-
-
-const shareBtn =
-  document.getElementById(
-    "shareBtn"
-  );
-
-
-const downloadBtn =
-  document.getElementById(
-    "downloadBtn"
-  );
-
-
-
-/*
-=================================================
-メッセージ
-=================================================
-*/
-
-
-function setStatus(
-  message
-) {
-
-  statusEl.textContent =
-    message;
-
-}
-
-
-
-/*
-=================================================
-フレーム切替
-=================================================
-*/
-
-
-function updateFrame() {
-
-
-  frameOverlay.src =
-    frames[
-      currentFrameIndex
-    ];
-
-
-  frameCounter.textContent =
-    `${
-      currentFrameIndex + 1
-    } / ${
-      frames.length
-    }`;
-
-}
-
-
-
-prevFrameBtn.addEventListener(
-
-  "click",
-
-  () => {
-
-
-    currentFrameIndex =
-
-      (
-        currentFrameIndex
-        -
-        1
-        +
-        frames.length
-      )
-
-      %
-
-      frames.length;
-
-
-    updateFrame();
-
+  function resizeStage() {
+    const w = Math.max(1, Math.min(area.clientWidth, area.clientHeight * (9 / 16)));
+    stage.style.width = `${w}px`;
+    stage.style.height = `${w * 16 / 9}px`;
   }
 
-);
+  function showMessage(text) { message.textContent = text; message.hidden = false; }
+  function hideMessage() { message.hidden = true; }
 
+  function setFrame() {
+    const name = frames[frameIndex];
+    frameCount.textContent = `${String(frameIndex + 1).padStart(2, '0')} / ${frames.length}`;
+    frameImage.src = `./${name}`;
+  }
+  frameImage.addEventListener('error', () => {
+    showMessage(`画像が見つかりません：${frames[frameIndex]}。GitHubのファイル名を確認してください。`);
+  });
+  frameImage.addEventListener('load', () => { if (ready) hideMessage(); });
 
-
-nextFrameBtn.addEventListener(
-
-  "click",
-
-  () => {
-
-
-    currentFrameIndex =
-
-      (
-        currentFrameIndex
-        +
-        1
-      )
-
-      %
-
-      frames.length;
-
-
-    updateFrame();
-
+  function applyZoom() {
+    zoom = Number(zoomInput.value);
+    zoomValue.textContent = `${zoom.toFixed(1)}×`;
+    video.style.transform = `${isFrontCamera ? 'scaleX(-1) ' : ''}scale(${zoom})`;
   }
 
-);
-
-
-
-/*
-=================================================
-プレビュー変形
-
-背面：
-普通
-
-前面：
-鏡像
-
-その上からズーム
-=================================================
-*/
-
-
-function applyPreviewTransform() {
-
-
-  if (
-    useFrontCamera
-  ) {
-
-
-    video.style.transform =
-
-      `scaleX(-1) scale(${zoomLevel})`;
-
-
+  function stopStream() {
+    if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+    video.srcObject = null;
+    ready = false;
   }
 
-  else {
-
-
-    video.style.transform =
-
-      `scale(${zoomLevel})`;
-
-
-  }
-
-}
-
-
-
-/*
-=================================================
-ズーム
-=================================================
-*/
-
-
-zoomSlider.addEventListener(
-
-  "input",
-
-  () => {
-
-
-    zoomLevel =
-      Number(
-        zoomSlider.value
-      );
-
-
-    zoomLabel.textContent =
-      `${zoomLevel.toFixed(1)}×`;
-
-
-    applyPreviewTransform();
-
-  }
-
-);
-
-
-
-/*
-=================================================
-カメラ起動
-=================================================
-*/
-
-
-async function startCamera() {
-
-
-  try {
-
-
-    setStatus(
-      "カメラを起動しています…"
-    );
-
-
-    /*
-    前のカメラ停止
-    */
-
-
-    if (
-      currentStream
-    ) {
-
-
-      currentStream
-        .getTracks()
-        .forEach(
-
-          track =>
-            track.stop()
-
-        );
-
-    }
-
-
-
-    /*
-    カメラ条件
-    */
-
-
-    const constraints = {
-
-
-      video: {
-
-
-        facingMode:
-
-          useFrontCamera
-
-            ? {
-                ideal:
-                  "user"
-              }
-
-            : {
-                ideal:
-                  "environment"
-              },
-
-
-        width: {
-
-          ideal: 1920
-
-        },
-
-
-        height: {
-
-          ideal: 1080
-
-        }
-
-
-      },
-
-
-      audio: false
-
-
-    };
-
-
-
-    /*
-    カメラ取得
-    */
-
-
-    currentStream =
-
-      await navigator
-        .mediaDevices
-        .getUserMedia(
-          constraints
-        );
-
-
-
-    video.srcObject =
-      currentStream;
-
-
-
-    await video.play();
-
-
-
-    applyPreviewTransform();
-
-
-
-    setStatus(
-
-      useFrontCamera
-
-        ? "インカメラで撮影できます。"
-
-        : "背面カメラで撮影できます。"
-
-    );
-
-
-  }
-
-  catch (
-    error
-  ) {
-
-
-    console.error(
-      error
-    );
-
-
-    setStatus(
-      "カメラを起動できませんでした。カメラの許可を確認してください。"
-    );
-
-  }
-
-}
-
-
-
-/*
-=================================================
-カメラ切替
-=================================================
-*/
-
-
-switchCameraBtn.addEventListener(
-
-  "click",
-
-  async () => {
-
-
-    useFrontCamera =
-      !useFrontCamera;
-
-
-    await startCamera();
-
-  }
-
-);
-
-
-
-/*
-=================================================
-画像読み込み
-=================================================
-*/
-
-
-function loadImage(
-  src
-) {
-
-
-  return new Promise(
-
-    (
-      resolve,
-      reject
-    ) => {
-
-
-      const image =
-        new Image();
-
-
-      image.onload =
-
-        () =>
-          resolve(
-            image
-          );
-
-
-      image.onerror =
-
-        () =>
-          reject(
-
-            new Error(
-              "フレーム画像を読み込めませんでした。"
-            )
-
-          );
-
-
-      image.src =
-        src;
-
-    }
-
-  );
-
-}
-
-
-
-/*
-=================================================
-撮影
-=================================================
-*/
-
-
-captureBtn.addEventListener(
-
-  "click",
-
-  async () => {
-
-
-    try {
-
-
-      /*
-      カメラ準備確認
-      */
-
-
-      if (
-
-        !video.videoWidth
-
-        ||
-
-        !video.videoHeight
-
-      ) {
-
-
-        setStatus(
-          "カメラ準備中です。少し待ってください。"
-        );
-
-
-        return;
-
-      }
-
-
-
-      setStatus(
-        "撮影しています…"
-      );
-
-
-
-      /*
-      完成画像
-
-      フレームと同じ
-      1080 × 1920
-      */
-
-
-      const canvas =
-
-        document.createElement(
-          "canvas"
-        );
-
-
-      canvas.width =
-        1080;
-
-
-      canvas.height =
-        1920;
-
-
-
-      const ctx =
-
-        canvas.getContext(
-          "2d"
-        );
-
-
-
-      const videoWidth =
-        video.videoWidth;
-
-
-      const videoHeight =
-        video.videoHeight;
-
-
-      const canvasWidth =
-        canvas.width;
-
-
-      const canvasHeight =
-        canvas.height;
-
-
-
-      const videoRatio =
-
-        videoWidth
-
-        /
-
-        videoHeight;
-
-
-
-      const canvasRatio =
-
-        canvasWidth
-
-        /
-
-        canvasHeight;
-
-
-
-      let sx;
-      let sy;
-
-      let sourceWidth;
-      let sourceHeight;
-
-
-
-      /*
-      =========================================
-      まず9:16に中央トリミング
-      =========================================
-      */
-
-
-      if (
-
-        videoRatio
-
-        >
-
-        canvasRatio
-
-      ) {
-
-
-        sourceHeight =
-          videoHeight;
-
-
-        sourceWidth =
-
-          videoHeight
-
-          *
-
-          canvasRatio;
-
-
-        sx =
-
-          (
-            videoWidth
-            -
-            sourceWidth
-          )
-
-          /
-
-          2;
-
-
-        sy = 0;
-
-
-      }
-
-      else {
-
-
-        sourceWidth =
-          videoWidth;
-
-
-        sourceHeight =
-
-          videoWidth
-
-          /
-
-          canvasRatio;
-
-
-        sx = 0;
-
-
-        sy =
-
-          (
-            videoHeight
-            -
-            sourceHeight
-          )
-
-          /
-
-          2;
-
-
-      }
-
-
-
-      /*
-      =========================================
-      ズーム分だけ
-      さらに中央を切り取る
-      =========================================
-      */
-
-
-      const originalWidth =
-        sourceWidth;
-
-
-      const originalHeight =
-        sourceHeight;
-
-
-
-      sourceWidth =
-
-        originalWidth
-
-        /
-
-        zoomLevel;
-
-
-
-      sourceHeight =
-
-        originalHeight
-
-        /
-
-        zoomLevel;
-
-
-
-      sx +=
-
-        (
-          originalWidth
-          -
-          sourceWidth
-        )
-
-        /
-
-        2;
-
-
-
-      sy +=
-
-        (
-          originalHeight
-          -
-          sourceHeight
-        )
-
-        /
-
-        2;
-
-
-
-      /*
-      =========================================
-      カメラ画像描画
-      =========================================
-      */
-
-
-      if (
-        useFrontCamera
-      ) {
-
-
-        /*
-        インカメラ
-        鏡像保存
-        */
-
-
-        ctx.save();
-
-
-        ctx.translate(
-          canvasWidth,
-          0
-        );
-
-
-        ctx.scale(
-          -1,
-          1
-        );
-
-
-        ctx.drawImage(
-
-          video,
-
-          sx,
-          sy,
-
-          sourceWidth,
-          sourceHeight,
-
-          0,
-          0,
-
-          canvasWidth,
-          canvasHeight
-
-        );
-
-
-        ctx.restore();
-
-
-      }
-
-      else {
-
-
-        /*
-        背面カメラ
-        */
-
-
-        ctx.drawImage(
-
-          video,
-
-          sx,
-          sy,
-
-          sourceWidth,
-          sourceHeight,
-
-          0,
-          0,
-
-          canvasWidth,
-          canvasHeight
-
-        );
-
-
-      }
-
-
-
-      /*
-      =========================================
-      フレームを重ねる
-      =========================================
-      */
-
-
-      const frameImage =
-
-        await loadImage(
-
-          frames[
-            currentFrameIndex
-          ]
-
-        );
-
-
-
-      ctx.drawImage(
-
-        frameImage,
-
-        0,
-        0,
-
-        canvasWidth,
-        canvasHeight
-
-      );
-
-
-
-      /*
-      =========================================
-      PNG生成
-      =========================================
-      */
-
-
-      capturedBlob =
-
-        await new Promise(
-
-          resolve => {
-
-
-            canvas.toBlob(
-
-              resolve,
-
-              "image/png"
-
-            );
-
-          }
-
-        );
-
-
-
-      if (
-        !capturedBlob
-      ) {
-
-
-        throw new Error(
-          "画像生成失敗"
-        );
-
-      }
-
-
-
-      /*
-      古い画像URLを削除
-      */
-
-
-      if (
-        capturedObjectUrl
-      ) {
-
-
-        URL.revokeObjectURL(
-          capturedObjectUrl
-        );
-
-      }
-
-
-
-      /*
-      新画像URL
-      */
-
-
-      capturedObjectUrl =
-
-        URL.createObjectURL(
-          capturedBlob
-        );
-
-
-
-      /*
-      撮影結果
-      */
-
-
-      resultImage.src =
-        capturedObjectUrl;
-
-
-      resultImage.style.display =
-        "block";
-
-
-      downloadBtn.href =
-        capturedObjectUrl;
-
-
-
-      /*
-      撮影HUD OFF
-      */
-
-
-      cameraHud.classList.add(
-        "hidden"
-      );
-
-
-      frameOverlay.classList.add(
-        "hidden"
-      );
-
-
-      video.classList.add(
-        "hidden"
-      );
-
-
-
-      /*
-      結果HUD ON
-      */
-
-
-      resultHud.classList.remove(
-        "hidden"
-      );
-
-
-
-      setStatus(
-        "撮影完了！保存してください。"
-      );
-
-
-    }
-
-    catch (
-      error
-    ) {
-
-
-      console.error(
-        error
-      );
-
-
-      setStatus(
-        "撮影に失敗しました。もう一度試してください。"
-      );
-
-    }
-
-  }
-
-);
-
-
-
-/*
-=================================================
-スマホ共有
-=================================================
-*/
-
-
-shareBtn.addEventListener(
-
-  "click",
-
-  async () => {
-
-
-    if (
-      !capturedBlob
-    ) {
-
-
-      setStatus(
-        "写真データがありません。"
-      );
-
-
+  async function startCamera() {
+    const id = ++startId;
+    stopStream();
+    showMessage('カメラを準備しています…　最初はアクセスを許可してください。');
+    if (!navigator.mediaDevices?.getUserMedia) {
+      showMessage('カメラを利用できません。HTTPSで公開したページをSafariまたはChromeで開いてください。');
       return;
-
     }
-
-
-
-    const photoFile =
-
-      new File(
-
-        [
-          capturedBlob
-        ],
-
-        "hyakkiyagyo-photo.png",
-
-        {
-
-          type:
-            "image/png"
-
-        }
-
-      );
-
-
-
     try {
-
-
-      /*
-      スマホ共有対応
-      */
-
-
-      if (
-
-        navigator.share
-
-        &&
-
-        navigator.canShare
-
-        &&
-
-        navigator.canShare({
-
-          files: [
-            photoFile
-          ]
-
-        })
-
-      ) {
-
-
-        await navigator.share({
-
-
-          files: [
-            photoFile
-          ],
-
-
-          title:
-            "百鬼夜行フォト"
-
-
-        });
-
-
-
-        setStatus(
-          "共有メニューから「写真に保存」「画像を保存」などを選んでください。"
-        );
-
-
+      const acquired = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: isFrontCamera ? 'user' : 'environment' },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      });
+      if (id !== startId) { acquired.getTracks().forEach(t => t.stop()); return; }
+      stream = acquired;
+      video.srcObject = stream;
+      await video.play();
+      if (id !== startId) return;
+      ready = true;
+      applyZoom();
+      if (frameImage.complete && frameImage.naturalWidth > 0) hideMessage();
+      else showMessage('フレーム画像を読み込んでいます…');
+    } catch (err) {
+      if (id !== startId) return;
+      console.error('Camera error:', err);
+      let hint = 'カメラが起動できません。端末のカメラ許可を確認して「再起動」を押してください。';
+      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+        hint = 'カメラの使用が許可されていません。ブラウザのサイト設定でカメラを許可し、「再起動」を押してください。';
+      } else if (err?.name === 'NotFoundError') {
+        hint = '利用できるカメラが見つかりませんでした。';
+      } else if (err?.name === 'NotReadableError') {
+        hint = '別のアプリがカメラを使用中かもしれません。カメラアプリを閉じて「再起動」を押してください。';
       }
-
-      else {
-
-
-        /*
-        非対応なら
-        通常ダウンロード
-        */
-
-
-        downloadBtn.click();
-
-
-        setStatus(
-          "画像をダウンロードしました。"
-        );
-
-
-      }
-
-
+      showMessage(hint);
     }
-
-    catch (
-      error
-    ) {
-
-
-      console.log(
-        error
-      );
-
-
-      if (
-
-        error.name
-
-        !==
-
-        "AbortError"
-
-      ) {
-
-
-        setStatus(
-          "保存できない場合は、写真を長押しして保存してください。"
-        );
-
-
-      }
-
-
-    }
-
   }
 
-);
-
-
-
-/*
-=================================================
-撮り直し
-=================================================
-*/
-
-
-retakeBtn.addEventListener(
-
-  "click",
-
-  () => {
-
-
-    resultImage.style.display =
-      "none";
-
-
-    resultImage.src =
-      "";
-
-
-
-    /*
-    カメラ復活
-    */
-
-
-    video.classList.remove(
-      "hidden"
-    );
-
-
-    frameOverlay.classList.remove(
-      "hidden"
-    );
-
-
-    cameraHud.classList.remove(
-      "hidden"
-    );
-
-
-
-    /*
-    結果ボタン非表示
-    */
-
-
-    resultHud.classList.add(
-      "hidden"
-    );
-
-
-
-    setStatus(
-      "撮り直しできます。"
-    );
-
-
+  function drawCameraCover(ctx, width, height) {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) throw new Error('カメラ映像が準備中です。');
+    const outRatio = width / height;
+    let cropW, cropH;
+    if (vw / vh > outRatio) { cropH = vh; cropW = vh * outRatio; }
+    else { cropW = vw; cropH = vw / outRatio; }
+    cropW /= zoom;
+    cropH /= zoom;
+    const sx = (vw - cropW) / 2, sy = (vh - cropH) / 2;
+    ctx.save();
+    if (isFrontCamera) { ctx.translate(width, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(video, sx, sy, cropW, cropH, 0, 0, width, height);
+    ctx.restore();
   }
 
-);
+  function revokePrevious() {
+    if (latestURL) { URL.revokeObjectURL(latestURL); latestURL = null; }
+    latestBlob = null;
+  }
 
+  async function takePhoto() {
+    if (!ready || !frameImage.complete || !frameImage.naturalWidth) {
+      showMessage('カメラまたはフレームの準備ができていません。');
+      return;
+    }
+    el('shutter').disabled = true;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = OUT_W;
+      canvas.height = OUT_H;
+      const ctx = canvas.getContext('2d');
+      drawCameraCover(ctx, OUT_W, OUT_H);
+      ctx.drawImage(frameImage, 0, 0, OUT_W, OUT_H);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw new Error('画像の生成に失敗しました。');
+      revokePrevious();
+      latestBlob = blob;
+      latestURL = URL.createObjectURL(blob);
+      photoPreview.src = latestURL;
+      review.hidden = false;
+      app.classList.add('is-review');
+      saveHelp.hidden = true;
+      resizeStage();
+    } catch (err) {
+      console.error(err);
+      showMessage(`撮影に失敗しました：${err.message || '再試行してください'}`);
+    } finally {
+      el('shutter').disabled = false;
+    }
+  }
 
+  async function savePhoto() {
+    if (!latestBlob) return;
+    const name = `hyakki-yako-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+    const file = new File([latestBlob], name, {type: 'image/png'});
+    saveHelp.hidden = true;
+    if (navigator.share && (!navigator.canShare || navigator.canShare({files: [file]}))) {
+      try {
+        await navigator.share({files: [file], title: '百鬼夜行 妖怪フォト'});
+        return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return; // ユーザーが共有を閉じた場合
+        console.warn('Share failed:', err);
+      }
+    }
+    // Web Share API を使えない場合の保存方法。
+    const a = document.createElement('a');
+    a.href = latestURL;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    saveHelp.textContent = '保存されない場合は、写真を長押しして「画像を保存」を選んでください。';
+    saveHelp.hidden = false;
+  }
 
-/*
-=================================================
-起動
-=================================================
-*/
+  el('prev').addEventListener('click', () => { frameIndex = (frameIndex - 1 + frames.length) % frames.length; setFrame(); });
+  el('next').addEventListener('click', () => { frameIndex = (frameIndex + 1) % frames.length; setFrame(); });
+  el('switchCamera').addEventListener('click', () => { isFrontCamera = !isFrontCamera; startCamera(); });
+  el('restart').addEventListener('click', startCamera);
+  zoomInput.addEventListener('input', applyZoom);
+  el('shutter').addEventListener('click', takePhoto);
+  el('retake').addEventListener('click', () => {
+    review.hidden = true;
+    app.classList.remove('is-review');
+    saveHelp.hidden = true;
+    photoPreview.removeAttribute('src');
+    revokePrevious();
+    resizeStage();
+  });
+  el('save').addEventListener('click', savePhoto);
+  window.addEventListener('resize', resizeStage);
+  if (window.ResizeObserver) new ResizeObserver(resizeStage).observe(area);
+  window.addEventListener('pagehide', stopStream);
 
-
-updateFrame();
-
-
-
-if (
-
-  !navigator.mediaDevices
-
-  ||
-
-  !navigator.mediaDevices.getUserMedia
-
-) {
-
-
-  setStatus(
-    "このブラウザはカメラ機能に対応していません。"
-  );
-
-
-}
-
-else {
-
-
+  resizeStage();
+  setFrame();
+  applyZoom();
   startCamera();
-
-
-}
-
-
+})();
 </script>
-
-
 </body>
-
 </html>
